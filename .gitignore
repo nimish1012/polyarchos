@@ -1,0 +1,25 @@
+# Rust
+target/
+
+# Node
+node_modules/
+dist/
+wasm/pkg/
+
+# Python
+__pycache__/
+.venv/
+*.pyc
+.mypy_cache/
+.ruff_cache/
+
+# Generated proto stubs (generated at build time)
+**/generated/
+
+# Env
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
