@@ -1,10 +1,10 @@
 """RAG engine entry point.
 
-Initialises all infrastructure clients (Milvus, Neo4j, embedding model, Ollama)
+Initialises all infrastructure clients (Milvus, Neo4j, embedding model, LLM)
 and starts the gRPC server on the configured port.
 
 All configuration is read from environment variables (prefix: ``RAG_``).
-See :mod:`rag_engine.config` for the full list.
+See :mod:`rag_engine.config` for the full list including LLM provider selection.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from rag_engine.config import get_settings
 from rag_engine.embeddings import EmbeddingModel
 from rag_engine.grpc_server import RagServiceServicer, serve
 from rag_engine.ingestion import IngestionPipeline
-from rag_engine.llm import OllamaClient
+from rag_engine.llm import create_llm_client
 from rag_engine.milvus_client import MilvusComponentStore
 from rag_engine.neo4j_client import Neo4jComponentGraph
 from rag_engine.pipeline import RagPipeline
@@ -33,10 +33,11 @@ def main() -> None:
     log = structlog.get_logger(__name__)
 
     cfg = get_settings()
+
     log.info(
         "Starting rag-engine",
         grpc_port=cfg.grpc_port,
-        llm_model=cfg.ollama_model,
+        llm_provider=cfg.llm_provider,
         embedding_model=cfg.embedding_model,
     )
 
@@ -57,11 +58,27 @@ def main() -> None:
     )
     asyncio.get_event_loop().run_until_complete(neo4j.connect())
 
-    llm = OllamaClient(
-        base_url=cfg.ollama_base_url,
-        model=cfg.ollama_model,
-        timeout_s=cfg.ollama_timeout_s,
+    llm = create_llm_client(
+        provider=cfg.llm_provider,
+        # Ollama
+        ollama_base_url=cfg.ollama_base_url,
+        ollama_model=cfg.ollama_model,
+        ollama_timeout_s=cfg.ollama_timeout_s,
+        # OpenAI
+        openai_api_key=cfg.openai_api_key,
+        openai_model=cfg.openai_model,
+        openai_timeout_s=cfg.openai_timeout_s,
+        # Google
+        google_api_key=cfg.google_api_key,
+        google_model=cfg.google_model,
+        # Anthropic
+        anthropic_api_key=cfg.anthropic_api_key,
+        anthropic_model=cfg.anthropic_model,
+        anthropic_max_tokens=cfg.anthropic_max_tokens,
+        anthropic_timeout_s=cfg.anthropic_timeout_s,
     )
+
+    log.info("LLM ready", model_id=llm.model_id)
 
     ingestion = IngestionPipeline(embedder=embedder, milvus=milvus, neo4j=neo4j)
     pipeline = RagPipeline(

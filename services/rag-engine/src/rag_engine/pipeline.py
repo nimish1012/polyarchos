@@ -9,9 +9,8 @@ Query flow
    connected interfaces) to enrich the prompt beyond what the vector index alone
    can provide.
 4. Assemble a context block and inject it into a structured prompt template.
-5. Call the local LLM (Ollama) and return the grounded answer with source citations.
-
-No external AI API is called at any point in this pipeline.
+5. Call the configured LLM (Ollama, OpenAI, Google, or Anthropic) and return
+   the grounded answer with source citations.
 """
 
 from __future__ import annotations
@@ -20,7 +19,7 @@ import logging
 from dataclasses import dataclass, field
 
 from rag_engine.embeddings import EmbeddingModel
-from rag_engine.llm import OllamaClient
+from rag_engine.llm import LlmClient
 from rag_engine.milvus_client import MilvusComponentStore, SearchResult
 from rag_engine.neo4j_client import Neo4jComponentGraph
 
@@ -63,7 +62,7 @@ class RagPipeline:
         embedder: EmbeddingModel,
         milvus: MilvusComponentStore,
         neo4j: Neo4jComponentGraph,
-        llm: OllamaClient,
+        llm: LlmClient,
         context_chunks: int = 5,
     ) -> None:
         self._embedder = embedder
@@ -109,7 +108,7 @@ class RagPipeline:
         if graph_context:
             context += f"\n\n[Graph context — connected ports and interfaces]\n{graph_context}"
 
-        # 5. Generate answer (local LLM — no external API call)
+        # 5. Generate answer
         prompt = _PROMPT_TEMPLATE.format(context=context, question=question)
         answer = self._llm.generate(prompt)
 
