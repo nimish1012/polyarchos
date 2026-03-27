@@ -7,9 +7,8 @@ dependencies = [
     "pymilvus>=2.4",
     "neo4j>=5.0",
     "fastembed>=0.3",
-    "langchain>=0.2",
-    "langchain-community>=0.2",
     "pydantic>=2.0",
+    "pydantic-settings>=2.0",
     "structlog>=24.0",
     "grpcio>=1.60",
     "grpcio-tools>=1.60",
@@ -24,5 +23,23 @@ dev = [
     "ruff>=0.5",
 ]
 
+[project.scripts]
+rag-engine = "rag_engine.main:main"
+
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "C4"]

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Synthetic AUTOSAR ARXML fixture for polyarchos testing.
+  Contains NO real OEM data. All component names and signal names are invented.
+  Schema: AUTOSAR 4.0 (Classic + Adaptive SWCs in the same document).
+-->
+<AUTOSAR
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://autosar.org/schema/conf/4.0"
+  xsi:schemaLocation="http://autosar.org/schema/conf/4.0">
+
+  <AR-PACKAGES>
+    <AR-PACKAGE>
+      <SHORT-NAME>polyarchos</SHORT-NAME>
+
+      <AR-PACKAGES>
+
+        <!-- ── Port Interfaces ────────────────────────────────────── -->
+        <AR-PACKAGE>
+          <SHORT-NAME>Interfaces</SHORT-NAME>
+          <ELEMENTS>
+
+            <SENDER-RECEIVER-INTERFACE>
+              <SHORT-NAME>FuelInjectionIf</SHORT-NAME>
+              <LONG-NAME>Fuel Injection Control Interface</LONG-NAME>
+            </SENDER-RECEIVER-INTERFACE>
+
+            <SENDER-RECEIVER-INTERFACE>
+              <SHORT-NAME>EngineSpeedIf</SHORT-NAME>
+              <LONG-NAME>Engine Speed Sensor Interface</LONG-NAME>
+            </SENDER-RECEIVER-INTERFACE>
+
+            <SENDER-RECEIVER-INTERFACE>
+              <SHORT-NAME>BrakePressureIf</SHORT-NAME>
+              <LONG-NAME>Brake Pressure Actuator Interface</LONG-NAME>
+            </SENDER-RECEIVER-INTERFACE>
+
+            <SENDER-RECEIVER-INTERFACE>
+              <SHORT-NAME>WheelSpeedIf</SHORT-NAME>
+              <LONG-NAME>Wheel Speed Sensor Interface</LONG-NAME>
+            </SENDER-RECEIVER-INTERFACE>
+
+            <PORT-INTERFACE>
+              <SHORT-NAME>ObjectDetectionIf</SHORT-NAME>
+              <LONG-NAME>Object Detection Service Interface (Adaptive)</LONG-NAME>
+            </PORT-INTERFACE>
+
+            <PORT-INTERFACE>
+              <SHORT-NAME>LaneFusionIf</SHORT-NAME>
+              <LONG-NAME>Lane Fusion Service Interface (Adaptive)</LONG-NAME>
+            </PORT-INTERFACE>
+
+          </ELEMENTS>
+        </AR-PACKAGE>
+
+        <!-- ── AUTOSAR Classic SWCs ───────────────────────────────── -->
+        <AR-PACKAGE>
+          <SHORT-NAME>Classic</SHORT-NAME>
+          <ELEMENTS>
+
+            <APPLICATION-SW-COMPONENT-TYPE>
+              <SHORT-NAME>EngineControlSWC</SHORT-NAME>
+              <LONG-NAME>Engine Control Software Component</LONG-NAME>
+              <PORTS>
+                <P-PORT-PROTOTYPE>
+                  <SHORT-NAME>FuelInjectionPort</SHORT-NAME>
+                  <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">
+                    /polyarchos/Interfaces/FuelInjectionIf
+                  </PROVIDED-INTERFACE-TREF>
+                </P-PORT-PROTOTYPE>
+                <R-PORT-PROTOTYPE>
+                  <SHORT-NAME>EngineSpeedPort</SHORT-NAME>
+                  <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">
+                    /polyarchos/Interfaces/EngineSpeedIf
+                  </REQUIRED-INTERFACE-TREF>
+                </R-PORT-PROTOTYPE>
+              </PORTS>
+            </APPLICATION-SW-COMPONENT-TYPE>
+
+            <APPLICATION-SW-COMPONENT-TYPE>
+              <SHORT-NAME>BrakeControlSWC</SHORT-NAME>
+              <LONG-NAME>Brake Control Software Component</LONG-NAME>
+              <PORTS>
+                <P-PORT-PROTOTYPE>
+                  <SHORT-NAME>BrakePressurePort</SHORT-NAME>
+                  <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">
+                    /polyarchos/Interfaces/BrakePressureIf
+                  </PROVIDED-INTERFACE-TREF>
+                </P-PORT-PROTOTYPE>
+                <R-PORT-PROTOTYPE>
+                  <SHORT-NAME>WheelSpeedPort</SHORT-NAME>
+                  <REQUIRED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">
+                    /polyarchos/Interfaces/WheelSpeedIf
+                  </REQUIRED-INTERFACE-TREF>
+                </R-PORT-PROTOTYPE>
+              </PORTS>
+            </APPLICATION-SW-COMPONENT-TYPE>
+
+            <SENSOR-ACTUATOR-SW-COMPONENT-TYPE>
+              <SHORT-NAME>WheelSpeedSensorSWC</SHORT-NAME>
+              <LONG-NAME>Wheel Speed Sensor Abstraction SWC</LONG-NAME>
+              <PORTS>
+                <P-PORT-PROTOTYPE>
+                  <SHORT-NAME>WheelSpeedOut</SHORT-NAME>
+                  <PROVIDED-INTERFACE-TREF DEST="SENDER-RECEIVER-INTERFACE">
+                    /polyarchos/Interfaces/WheelSpeedIf
+                  </PROVIDED-INTERFACE-TREF>
+                </P-PORT-PROTOTYPE>
+              </PORTS>
+            </SENSOR-ACTUATOR-SW-COMPONENT-TYPE>
+
+          </ELEMENTS>
+        </AR-PACKAGE>
+
+        <!-- ── AUTOSAR Adaptive SWCs ──────────────────────────────── -->
+        <AR-PACKAGE>
+          <SHORT-NAME>Adaptive</SHORT-NAME>
+          <ELEMENTS>
+
+            <ADAPTIVE-APPLICATION-SW-COMPONENT-TYPE>
+              <SHORT-NAME>PerceptionServiceSWC</SHORT-NAME>
+              <LONG-NAME>Perception Service Software Component (ADAS)</LONG-NAME>
+              <PORTS>
+                <P-PORT-PROTOTYPE>
+                  <SHORT-NAME>ObjectDetectionPort</SHORT-NAME>
+                  <PROVIDED-INTERFACE-TREF DEST="PORT-INTERFACE">
+                    /polyarchos/Interfaces/ObjectDetectionIf
+                  </PROVIDED-INTERFACE-TREF>
+                </P-PORT-PROTOTYPE>
+                <R-PORT-PROTOTYPE>
+                  <SHORT-NAME>CameraFeedPort</SHORT-NAME>
+                  <REQUIRED-INTERFACE-TREF DEST="PORT-INTERFACE">
+                    /polyarchos/Interfaces/LaneFusionIf
+                  </REQUIRED-INTERFACE-TREF>
+                </R-PORT-PROTOTYPE>
+              </PORTS>
+            </ADAPTIVE-APPLICATION-SW-COMPONENT-TYPE>
+
+          </ELEMENTS>
+        </AR-PACKAGE>
+
+      </AR-PACKAGES>
+    </AR-PACKAGE>
+  </AR-PACKAGES>
+
+</AUTOSAR>

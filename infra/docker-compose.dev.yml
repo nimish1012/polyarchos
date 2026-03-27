@@ -1,0 +1,128 @@
+# Local development stack for polyarchos.
+#
+# Starts: Neo4j 5.x · Milvus standalone (+ etcd + MinIO) · Ollama
+#
+# Usage:
+#   docker compose -f infra/docker-compose.dev.yml up -d
+#   docker compose -f infra/docker-compose.dev.yml down -v   # destroy volumes
+#
+# After startup:
+#   - Neo4j Browser:  http://localhost:7474  (neo4j / polyarchos)
+#   - Milvus:         localhost:19530
+#   - Ollama API:     http://localhost:11434
+#
+# Pull the LLM model once after first startup:
+#   docker exec -it polyarchos-ollama ollama pull mistral:7b-instruct
+#
+# No :latest image tags — all images are pinned to specific semver releases.
+# Production k8s manifests (infra/k8s/) additionally pin SHA256 digests.
+
+services:
+
+  # ── Neo4j 5.x ──────────────────────────────────────────────────────────────
+  neo4j:
+    image: neo4j:5.20.0
+    container_name: polyarchos-neo4j
+    environment:
+      NEO4J_AUTH: neo4j/polyarchos
+      NEO4J_PLUGINS: '["apoc"]'
+      NEO4J_dbms_memory_pagecache_size: 512M
+      NEO4J_dbms_memory_heap_max__size: 1G
+    ports:
+      - "7474:7474"   # HTTP / Browser UI
+      - "7687:7687"   # Bolt (driver)
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+    healthcheck:
+      test: ["CMD", "neo4j", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ── Milvus dependencies ────────────────────────────────────────────────────
+
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.14
+    container_name: polyarchos-etcd
+    environment:
+      ETCD_AUTO_COMPACTION_MODE: revision
+      ETCD_AUTO_COMPACTION_RETENTION: "1000"
+      ETCD_QUOTA_BACKEND_BYTES: "4294967296"
+      ETCD_SNAPSHOT_COUNT: "50000"
+    command:
+      - etcd
+      - --advertise-client-urls=http://etcd:2379
+      - --listen-client-urls=http://0.0.0.0:2379
+      - --data-dir=/etcd
+    volumes:
+      - etcd-data:/etcd
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:RELEASE.2024-05-27T19-17-46Z
+    container_name: polyarchos-minio
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    command: minio server /minio_data --console-address ":9001"
+    ports:
+      - "9001:9001"   # MinIO console
+    volumes:
+      - minio-data:/minio_data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Milvus standalone ──────────────────────────────────────────────────────
+  milvus:
+    image: milvusdb/milvus:v2.4.8
+    container_name: polyarchos-milvus
+    command: ["milvus", "run", "standalone"]
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+    ports:
+      - "19530:19530"   # gRPC API
+      - "9091:9091"     # metrics
+    volumes:
+      - milvus-data:/var/lib/milvus
+    depends_on:
+      etcd:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  # ── Ollama (local LLM server) ──────────────────────────────────────────────
+  #
+  # After `docker compose up`, pull the model once:
+  #   docker exec -it polyarchos-ollama ollama pull mistral:7b-instruct
+  #
+  # GPU support: add `deploy.resources.reservations.devices` if you have an
+  # NVIDIA GPU and nvidia-container-toolkit installed.
+  ollama:
+    image: ollama/ollama:0.3.12
+    container_name: polyarchos-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+
+volumes:
+  neo4j-data:
+  neo4j-logs:
+  etcd-data:
+  minio-data:
+  milvus-data:
+  ollama-models:
