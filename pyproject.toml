@@ -1,0 +1,33 @@
+[project]
+name = "polyarchos"
+version = "0.1.0"
+description = "AUTOSAR Component Intelligence Platform — Python workspace"
+requires-python = ">=3.12"
+
+[tool.uv.workspace]
+members = [
+    "services/rag-engine",
+    "scripts",
+]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+exclude = ["tests/", ".*_pb2\\.py", ".*_pb2_grpc\\.py"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "ANN", "S", "B", "A", "C4", "PT"]
+ignore = ["ANN101", "ANN102"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "ANN"]
+
+[tool.pytest.ini_options]
+testpaths = ["services/rag-engine/tests", "scripts/tests"]
+asyncio_mode = "auto"

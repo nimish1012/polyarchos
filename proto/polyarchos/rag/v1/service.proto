@@ -1,0 +1,91 @@
+syntax = "proto3";
+
+package polyarchos.rag.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option java_multiple_files = true;
+
+// RagService exposes the RAG pipeline for ingestion and Q&A.
+// All inference runs locally — no external AI API calls are made.
+service RagService {
+  // IngestDocument ingests an ARXML document into Milvus (embeddings)
+  // and Neo4j (component graph). Idempotent on arxml_ref path.
+  rpc IngestDocument(IngestDocumentRequest) returns (IngestDocumentResponse);
+
+  // Query answers a natural-language question about the AUTOSAR component
+  // landscape using retrieval-augmented generation over the local LLM.
+  rpc Query(QueryRequest) returns (QueryResponse);
+
+  // GetIngestStatus returns the current status of an ingestion job.
+  rpc GetIngestStatus(GetIngestStatusRequest) returns (GetIngestStatusResponse);
+}
+
+// IngestDocumentRequest carries raw ARXML content for ingestion.
+message IngestDocumentRequest {
+  // Raw ARXML document content (XML bytes).
+  bytes arxml_content = 1;
+  // Logical name for this document, used for idempotency.
+  string document_name = 2;
+}
+
+// IngestDocumentResponse reports the outcome of ingestion.
+message IngestDocumentResponse {
+  // Server-assigned job ID for status polling.
+  string job_id = 1;
+  // Number of SWC records extracted and indexed.
+  int32 components_indexed = 2;
+  // Number of graph edges created in Neo4j.
+  int32 graph_edges_created = 3;
+  // When ingestion completed.
+  google.protobuf.Timestamp completed_at = 4;
+}
+
+// IngestStatus tracks the lifecycle of an ingestion job.
+enum IngestStatus {
+  INGEST_STATUS_UNSPECIFIED = 0;
+  INGEST_STATUS_PENDING = 1;
+  INGEST_STATUS_RUNNING = 2;
+  INGEST_STATUS_COMPLETED = 3;
+  INGEST_STATUS_FAILED = 4;
+}
+
+// GetIngestStatusRequest identifies a job to check.
+message GetIngestStatusRequest {
+  string job_id = 1;
+}
+
+// GetIngestStatusResponse returns current job state.
+message GetIngestStatusResponse {
+  string job_id = 1;
+  IngestStatus status = 2;
+  string error_message = 3;
+}
+
+// QueryRequest carries a natural-language question.
+message QueryRequest {
+  // The question to answer, e.g. "Which SWCs communicate over CAN?"
+  string question = 1;
+  // Maximum number of context chunks to retrieve (default 5).
+  int32 context_chunks = 2;
+}
+
+// QueryResponse returns the grounded answer and its sources.
+message QueryResponse {
+  // The generated answer text.
+  string answer = 1;
+  // Source chunks used to ground the answer.
+  repeated SourceChunk sources = 2;
+  // The local model that produced the answer.
+  string model_id = 3;
+}
+
+// SourceChunk is a retrieved context fragment used to ground the answer.
+message SourceChunk {
+  // ARXML document this chunk came from.
+  string document_name = 1;
+  // The raw text of the chunk.
+  string text = 2;
+  // Cosine similarity score of this chunk to the query.
+  float relevance_score = 3;
+}

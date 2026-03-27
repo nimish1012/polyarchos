@@ -1,0 +1,23 @@
+version: v2
+inputs:
+  - directory: proto
+plugins:
+  # Rust — tonic (gRPC) + prost (protobuf types)
+  - remote: buf.build/community/neoeinstein-prost:v0.4.0
+    out: services/core-api/src/generated
+    opt:
+      - compile_well_known_types=true
+      - extern_path=.google.protobuf=::pbjson_types
+
+  - remote: buf.build/community/neoeinstein-tonic:v0.4.0
+    out: services/core-api/src/generated
+    opt:
+      - compile_well_known_types=true
+      - extern_path=.google.protobuf=::pbjson_types
+
+  # Python — grpcio-tools
+  - remote: buf.build/protocolbuffers/python:v28.3
+    out: services/rag-engine/src/generated
+
+  - remote: buf.build/grpc/python:v1.68.1
+    out: services/rag-engine/src/generated

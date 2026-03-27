@@ -1,0 +1,12 @@
+[package]
+name = "domain"
+version.workspace = true
+edition.workspace = true
+description = "AUTOSAR domain types shared across all polyarchos services"
+
+# MSRV: 1.75 (required for async fn in traits)
+rust-version = "1.75"
+
+[dependencies]
+serde = { workspace = true }
+thiserror = { workspace = true }

@@ -1,0 +1,21 @@
+[project]
+name = "polyarchos-scripts"
+version = "0.1.0"
+description = "polyarchos dev utilities — ARXML ingestion, fixtures, local helpers"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.0",
+    "structlog>=24.0",
+    "lxml>=5.0",
+    "click>=8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "mypy>=1.10",
+    "ruff>=0.5",
+]
+
+[project.scripts]
+ingest = "polyarchos_scripts.ingest:main"

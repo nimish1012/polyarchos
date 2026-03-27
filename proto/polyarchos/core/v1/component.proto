@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package polyarchos.core.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option java_multiple_files = true;
+
+// Distinguishes AUTOSAR Classic and Adaptive platform components.
+enum AutosarVariant {
+  AUTOSAR_VARIANT_UNSPECIFIED = 0;
+  // Classic Platform — static, resource-constrained ECUs.
+  AUTOSAR_VARIANT_CLASSIC = 1;
+  // Adaptive Platform — POSIX-based, service-oriented (SOME/IP).
+  AUTOSAR_VARIANT_ADAPTIVE = 2;
+}
+
+// Direction of a port on a Software Component.
+enum PortDirection {
+  PORT_DIRECTION_UNSPECIFIED = 0;
+  // Provided port — the SWC implements this interface.
+  PORT_DIRECTION_PROVIDED = 1;
+  // Required port — the SWC consumes this interface.
+  PORT_DIRECTION_REQUIRED = 2;
+}
+
+// A reference to an ARXML element by its fully-qualified short-name path.
+message ArxmlRef {
+  // Fully-qualified ARXML short-name path, e.g. /AUTOSAR/Components/EngineControl
+  string path = 1;
+}
+
+// An AUTOSAR Software Component descriptor.
+message SoftwareComponent {
+  // Unique identifier (server-assigned UUID).
+  string id = 1;
+  // Fully-qualified ARXML reference.
+  ArxmlRef arxml_ref = 2;
+  // Human-readable component name.
+  string name = 3;
+  // Classic or Adaptive.
+  AutosarVariant variant = 4;
+  // Optional description extracted from the ARXML.
+  string description = 5;
+  // Ports defined on this component.
+  repeated Port ports = 6;
+  // When this record was ingested.
+  google.protobuf.Timestamp ingested_at = 7;
+}
+
+// An AUTOSAR Port on a Software Component.
+message Port {
+  // ARXML reference identifying this port.
+  ArxmlRef arxml_ref = 1;
+  // Human-readable port name.
+  string name = 2;
+  // Provided or required.
+  PortDirection direction = 3;
+  // Reference to the PortInterface this port realises.
+  ArxmlRef interface_ref = 4;
+}

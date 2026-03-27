@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  # ── 1. Proto ────────────────────────────────────────────────────────────────
+  proto:
+    name: buf lint + breaking
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bufbuild/buf-action@v1
+        with:
+          lint: true
+          breaking: true
+          breaking_against: "https://github.com/${{ github.repository }}.git#branch=main"
+
+  # ── 2-4. Rust ───────────────────────────────────────────────────────────────
+  rust:
+    name: Rust (fmt / clippy / test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: fmt
+        run: cargo fmt --check
+      - name: clippy
+        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+      - name: test
+        run: cargo test --workspace
+
+  # ── 5. WASM ─────────────────────────────────────────────────────────────────
+  wasm:
+    name: WASM build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - uses: jetli/wasm-pack-action@v0.4.0
+      - name: build
+        run: wasm-pack build wasm/ --target web
+
+  # ── 6-8. Python ─────────────────────────────────────────────────────────────
+  python:
+    name: Python (mypy / ruff / pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          python-version: "3.12"
+      - run: uv sync
+      - name: mypy
+        run: uv run mypy services/rag-engine scripts --strict
+      - name: ruff lint
+        run: uv run ruff check .
+      - name: ruff format
+        run: uv run ruff format --check .
+      - name: pytest
+        run: uv run pytest -v
+
+  # ── 9. Frontend ─────────────────────────────────────────────────────────────
+  frontend:
+    name: Frontend (typecheck / lint / test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm install
+      - name: typecheck
+        run: npm run typecheck -w frontend
+      - name: lint
+        run: npm run lint -w frontend
+      - name: test
+        run: npm run test -w frontend
+
+  # ── 10-11. Docker build + SHA lint ──────────────────────────────────────────
+  docker:
+    name: Docker build + image lint
+    runs-on: ubuntu-latest
+    needs: [rust, python, frontend]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check no :latest image references
+        run: |
+          if grep -r ":latest" infra/ Dockerfile* 2>/dev/null; then
+            echo "ERROR: :latest image references found. Use SHA-pinned or semver tags."
+            exit 1
+          fi
+          echo "OK: no :latest references found"

@@ -1,0 +1,59 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/domain",
+    "services/core-api",
+    "wasm",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["polyarchos contributors"]
+license = "MIT"
+
+[workspace.dependencies]
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# gRPC
+tonic = "0.12"
+tonic-build = "0.12"
+prost = "0.13"
+prost-types = "0.13"
+
+# REST
+axum = { version = "0.7", features = ["macros"] }
+tower = "0.4"
+tower-http = { version = "0.5", features = ["cors", "trace"] }
+
+# OpenAPI
+utoipa = { version = "4", features = ["axum_extras"] }
+utoipa-swagger-ui = { version = "7", features = ["axum"] }
+
+# Serialisation
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Error handling
+anyhow = "1"
+thiserror = "1"
+
+# Logging / tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Utilities
+uuid = { version = "1", features = ["v4", "serde"] }
+
+# DB
+neo4rs = "0.7"
+
+# WASM
+wasm-bindgen = "0.2"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true

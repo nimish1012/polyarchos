@@ -1,0 +1,24 @@
+[package]
+name = "polyarchos-wasm"
+version.workspace = true
+edition.workspace = true
+description = "AUTOSAR domain logic compiled to WASM for browser use"
+
+rust-version = "1.75"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+domain = { path = "../crates/domain" }
+wasm-bindgen = { workspace = true }
+serde = { workspace = true }
+serde_json = "1"
+roxmltree = "0.19"
+console_error_panic_hook = "0.1"
+
+# wasm-opt bundled with older wasm-pack versions does not support bulk-memory
+# instructions emitted by Rust. Pass --enable-bulk-memory so the optimizer
+# accepts memory.copy / memory.fill opcodes.
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["--enable-bulk-memory", "-O"]

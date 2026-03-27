@@ -1,25 +1,47 @@
 # Rust
 target/
+Cargo.lock
 
 # Node
 node_modules/
 dist/
+build/
 wasm/pkg/
+frontend/dist/
 
 # Python
 __pycache__/
+*.py[cod]
 .venv/
-*.pyc
+venv/
+*.egg-info/
 .mypy_cache/
 .ruff_cache/
+.pytest_cache/
+htmlcov/
+.coverage
 
-# Generated proto stubs (generated at build time)
+# Generated proto stubs (generated at build time, never committed)
 **/generated/
+**/_pb2.py
+**/_pb2_grpc.py
+**/_pb2.pyi
 
 # Env
 .env
 .env.local
+.env.*.local
 
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Kubernetes — never commit plaintext secrets
+**/secrets/*.yaml
+!**/secrets/*.example.yaml

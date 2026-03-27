@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+package polyarchos.core.v1;
+
+import "polyarchos/core/v1/component.proto";
+import "google/protobuf/empty.proto";
+
+option java_multiple_files = true;
+
+// ComponentService manages AUTOSAR software component records.
+// It is the primary CRUD surface for ingested ECU configurations.
+service ComponentService {
+  // GetComponent retrieves a single SWC by its server-assigned ID.
+  rpc GetComponent(GetComponentRequest) returns (GetComponentResponse);
+
+  // ListComponents returns a paginated list of all ingested SWCs,
+  // optionally filtered by AUTOSAR variant.
+  rpc ListComponents(ListComponentsRequest) returns (ListComponentsResponse);
+
+  // SearchComponents performs semantic search over component descriptions
+  // using the RAG engine's vector index. Returns ranked results.
+  rpc SearchComponents(SearchComponentsRequest) returns (SearchComponentsResponse);
+
+  // DeleteComponent removes a SWC record and its associated embeddings.
+  rpc DeleteComponent(DeleteComponentRequest) returns (google.protobuf.Empty);
+}
+
+// GetComponentRequest identifies a single component to retrieve.
+message GetComponentRequest {
+  // Server-assigned UUID of the component.
+  string id = 1;
+}
+
+// GetComponentResponse wraps the retrieved component.
+message GetComponentResponse {
+  SoftwareComponent component = 1;
+}
+
+// ListComponentsRequest supports pagination and optional variant filtering.
+message ListComponentsRequest {
+  // Maximum number of results to return (default 50, max 200).
+  int32 page_size = 1;
+  // Pagination token from a previous ListComponents response.
+  string page_token = 2;
+  // If set, only return components of this variant.
+  AutosarVariant variant_filter = 3;
+}
+
+// ListComponentsResponse returns a page of components.
+message ListComponentsResponse {
+  repeated SoftwareComponent components = 1;
+  // Token for the next page; empty if this is the last page.
+  string next_page_token = 2;
+  // Total number of components matching the filter.
+  int32 total_count = 3;
+}
+
+// SearchComponentsRequest carries a natural-language query.
+message SearchComponentsRequest {
+  // Natural-language query, e.g. "engine control SWC with CAN interface".
+  string query = 1;
+  // Maximum number of results (default 10, max 50).
+  int32 top_k = 2;
+}
+
+// SearchComponentsResponse returns ranked semantic search results.
+message SearchComponentsResponse {
+  repeated SearchResult results = 1;
+}
+
+// SearchResult pairs a component with its relevance score.
+message SearchResult {
+  SoftwareComponent component = 1;
+  // Cosine similarity score in [0, 1].
+  float score = 2;
+}
+
+// DeleteComponentRequest identifies the component to remove.
+message DeleteComponentRequest {
+  // Server-assigned UUID of the component.
+  string id = 1;
+}
