@@ -8,17 +8,17 @@
 
 ## Phase Status
 
-| Phase | Title | Status |
-|---|---|---|
-| 0 | Foundation Scaffold | ✅ Complete |
-| 1 | Proto Contracts | ✅ Complete |
-| 2 | Core API (Rust gRPC + REST) | ✅ Complete |
-| 3 | WASM Bindings | 🔜 Next |
-| 4 | AI/ML Layer (Python RAG) | ⏳ Pending |
-| 5 | Frontend (React + TypeScript) | ⏳ Pending |
-| 6 | Infrastructure + GitOps | ⏳ Pending |
-| 7 | CI/CD Hardening | ⏳ Pending |
-| 8 | Documentation + Portfolio Polish | ⏳ Pending |
+| Phase | Title | Status | Detail |
+|---|---|---|---|
+| 0 | Foundation Scaffold | ✅ Complete | [Root README](../../README.md) |
+| 1 | Proto Contracts | ✅ Complete | [proto/README.md](../../proto/README.md) |
+| 2 | Core API (Rust gRPC + REST) | ✅ Complete | [core-api/README.md](../../services/core-api/README.md) · [PHASE-2-core-api.md](PHASE-2-core-api.md) |
+| 3 | WASM Bindings | ✅ Complete | [wasm/README.md](../../wasm/README.md) · [PHASE-3-wasm-bindings.md](PHASE-3-wasm-bindings.md) |
+| 4 | AI/ML Layer (Python RAG) | ✅ Complete | [rag-engine/README.md](../../services/rag-engine/README.md) · [PHASE-4-rag-engine.md](PHASE-4-rag-engine.md) |
+| 5 | Frontend (React + TypeScript) | ✅ Complete | [frontend/README.md](../../frontend/README.md) · [PHASE-5-frontend.md](PHASE-5-frontend.md) |
+| 6 | Infrastructure + GitOps | 🔜 Planned | [infra/README.md](../../infra/README.md) |
+| 7 | CI/CD Hardening | 🔜 Planned | — |
+| 8 | Documentation + Portfolio Polish | 🔜 Planned | — |
 
 ---
 
